@@ -135,3 +135,23 @@ A public ITRA page is not permission to publish a person's identity or race-by-r
 ### License
 
 This project is released under the [MIT License](LICENSE).
+
+---
+
+## Report rendering / 报告渲染
+
+This repository includes a fixed-style renderer in [`rendering/`](rendering/) for the final Markdown report. It produces matching HTML and PDF output without relying on a machine-specific renderer path.
+
+本仓库在 [`rendering/`](rendering/) 内自带固定风格渲染器，可将最终 Markdown 报告生成风格一致的 HTML 和 PDF，不依赖任何本机专属路径。
+
+Only render after the report workflow has completed and reports `terminal_report_allowed=true`. Rendering must never bypass missing CP evidence or other workflow gates.
+
+仅当报告工作流完成且显示 `terminal_report_allowed=true` 后才可渲染；渲染不能绕过 CP 证据缺失或其他工作流门槛。
+
+```powershell
+python rendering/build_report.py 路径\最终报告.md --out-dir E:\输出目录
+```
+
+The command generates a same-named `.html` file and `.pdf` file. Keep `style-spec.md`, `report.css`, and `pdf_style.py` synchronized whenever the visual style is changed.
+
+命令会生成同名 `.html` 与 `.pdf` 文件。修改视觉风格时，必须同步维护 `style-spec.md`、`report.css` 和 `pdf_style.py`。

@@ -5,6 +5,16 @@ description: 基于证据的越野赛规划与复盘：ITRA 公开跑者核验�
 
 # 越野赛策略师
 
+## 固定风格 HTML/PDF 渲染
+
+仅当当前 request 的 `report status` 已返回 `terminal_report_allowed=true` 后，才可将最终 Markdown 报告交给自带的 [`rendering/`](rendering/) 渲染器。不得用渲染来掩盖 CP 证据缺失、报告未完成或任何工作流阻断。
+
+```powershell
+python rendering/build_report.py <最终报告.md> --out-dir <E盘输出目录>
+```
+
+该命令会生成同名 HTML 和 PDF。保持 `rendering/style-spec.md`、`rendering/report.css` 与 `rendering/pdf_style.py` 同步；不得为单次报告另造 CSS 或替换渲染器。交付前验证 Markdown 的 6.1、6.2、6.3 段落仍存在，且 HTML/PDF 的中文和完整 CP 总览表可读。
+
 构建可追溯的越野赛产物；不得将缺失数据或研究候选写成事实。
 
 ## 先过关卡
