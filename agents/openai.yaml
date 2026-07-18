@@ -1,0 +1,5 @@
+interface:
+  display_name: "Trail Race Strategist"
+  short_description: "Three-input public-data trail race strategy workflow"
+  default_prompt: "Use $trail-race-strategist. Ask me only for name, exact ITRA Runner ID, and target event; acquire and parse all public runner and race material, then produce the complete CP and per-segment strategy report with explicit safety, provenance, privacy, and Phase 8A boundaries."
+

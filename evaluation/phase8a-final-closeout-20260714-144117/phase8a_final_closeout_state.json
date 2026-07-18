@@ -1,0 +1,19 @@
+{
+  "schema_name": "phase8a_final_closeout_state",
+  "schema_version": "1.0.0",
+  "generated_at": "2026-07-14T06:41:35.701142+00:00",
+  "phase": "Phase 8A",
+  "status": "closed_after_failed_validation",
+  "validation_gate_passed": false,
+  "validation_decision": "retain_distance_only",
+  "full_model_status": "rejected",
+  "retained_reference_model": "distance_only",
+  "holdout_status": "permanently_not_entered_for_this_protocol_and_cohort",
+  "holdout_evaluation_run": false,
+  "holdout_run_count": 0,
+  "unique_candidate_frozen": false,
+  "model_validated": false,
+  "user_facing_prediction_allowed": false,
+  "future_reevaluation_requires_new_data_and_new_protocol": true,
+  "phase9_entered": false
+}
