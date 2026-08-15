@@ -14,7 +14,8 @@
     {"path": "weather_scenario"},
     {"path": "live_replanning"},
     {"path": "post_race"},
-    {"path": "report_workflow"}
+    {"path": "report_workflow"},
+    {"path": "wearable_ingest"}
   ],
   "reporting_contract_sha256": "05a92c2d5274ebea486cc53145fcd303b34c4c3ab9fd4365207830485ecd91ed"
 }

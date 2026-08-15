@@ -14,18 +14,25 @@ from .mapping import build_current_readiness_output, build_missing_information_o
 from .normalization import fingerprint, normalize_answers, normalize_runner_profile
 from .questions import build_question_schema
 from .validation import ValidationError, validate_readiness_answers, validate_runner_profile
+from .wearable_context import validate_wearable_feature_summary
 
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def build_runner_readiness(profile: Mapping[str, Any], answers: Mapping[str, Any]) -> dict[str, Any]:
+def build_runner_readiness(
+    profile: Mapping[str, Any], answers: Mapping[str, Any], *, wearable_feature_summary: Mapping[str, Any] | None = None
+) -> dict[str, Any]:
     profile_errors = validate_runner_profile(profile)
     answer_errors = validate_readiness_answers(answers)
     errors = profile_errors + answer_errors
     if errors:
         raise ValidationError("; ".join(errors))
+    if wearable_feature_summary is not None:
+        wearable_errors = validate_wearable_feature_summary(wearable_feature_summary)
+        if wearable_errors:
+            raise ValidationError("; ".join(wearable_errors))
 
     normalized_profile = normalize_runner_profile(profile)
     question_schema = build_question_schema(answers["mode"])
@@ -44,6 +51,7 @@ def build_runner_readiness(profile: Mapping[str, Any], answers: Mapping[str, Any
             f"answers={normalized_answers['raw_input_fingerprint']}",
             f"health={health['risk_level']}",
             f"permission={health['planning_permission']}",
+            f"wearable={fingerprint(wearable_feature_summary) if wearable_feature_summary is not None else 'none'}",
         ]
     )
 
@@ -69,6 +77,7 @@ def build_runner_readiness(profile: Mapping[str, Any], answers: Mapping[str, Any
         completeness=completeness,
         health=health,
         cache_key=cache_key,
+        wearable_feature_summary=wearable_feature_summary,
     )
     if isinstance(profile.get("request_binding"), Mapping):
         current_readiness["request_binding"] = dict(profile["request_binding"])
@@ -95,7 +104,8 @@ def write_readiness_outputs(outputs: Mapping[str, Any], output_dir: Path) -> Non
         (output_dir / f"{name}.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
 
-def replay_runner_readiness(*, profile_path: Path, answers_path: Path) -> dict[str, Any]:
+def replay_runner_readiness(*, profile_path: Path, answers_path: Path, wearable_feature_summary_path: Path | None = None) -> dict[str, Any]:
     profile = json.loads(profile_path.read_text(encoding="utf-8"))
     answers = json.loads(answers_path.read_text(encoding="utf-8"))
-    return build_runner_readiness(profile, answers)
+    summary = json.loads(wearable_feature_summary_path.read_text(encoding="utf-8")) if wearable_feature_summary_path else None
+    return build_runner_readiness(profile, answers, wearable_feature_summary=summary)

@@ -10,10 +10,10 @@ description: 基于证据的越野赛规划与复盘：ITRA 公开跑者核验�
 仅当当前 request 的 `report status` 已返回 `terminal_report_allowed=true` 后，才可将最终 Markdown 报告交给自带的 [`rendering/`](rendering/) 渲染器。不得用渲染来掩盖 CP 证据缺失、报告未完成或任何工作流阻断。
 
 ```powershell
-python rendering/build_report.py <最终报告.md> --out-dir <E盘输出目录>
+python rendering/build_report.py <最终报告.md> --out-dir <任意可写输出目录>
 ```
 
-该命令会生成同名 HTML 和 PDF。保持 `rendering/style-spec.md`、`rendering/report.css` 与 `rendering/pdf_style.py` 同步；不得为单次报告另造 CSS 或替换渲染器。交付前验证 Markdown 的 6.1、6.2、6.3 段落仍存在，且 HTML/PDF 的中文和完整 CP 总览表可读。
+该命令会生成同名 HTML 和 PDF。输出目录优先级为：显式 `--out-dir`、环境变量 `TRAIL_RACE_OUTPUT_DIR`、Markdown 源文件所在目录。任意可写目录均可，包括当前 Codex、Workbody 或其他 AI 工具工作区；不得硬编码盘符。保持 `rendering/style-spec.md`、`rendering/report.css` 与 `rendering/pdf_style.py` 同步；不得为单次报告另造 CSS 或替换渲染器。交付前验证 Markdown 的 6.1、6.2、6.3 段落仍存在，且 HTML/PDF 的中文和完整 CP 总览表可读。
 
 构建可追溯的越野赛产物；不得将缺失数据或研究候选写成事实。
 
@@ -73,7 +73,7 @@ python scripts/run_workflow.py --dry-run <workflow> <module arguments>
 python scripts/run_workflow.py <workflow> <module arguments>
 ```
 
-装器使用自身 `.venv`，输出必须位于 `E:`，运行时、虚拟环境或模型状态缺失时失败关闭。安装后只用 `python scripts/run_workflow.py bootstrap` 初始化本 Skill 依赖。
+装器使用自身 `.venv`；对要求输出参数的工作流，必须显式传入任意可写目录，缺失或无效路径时失败关闭。安装后只用 `python scripts/run_workflow.py bootstrap` 初始化本 Skill 依赖。
 
 遵循 [data-schemas.md](references/data-schemas.md)、[cache-policy.md](references/cache-policy.md)、[prediction-method.md](references/prediction-method.md)；新建时间戳目录，绝不覆盖原始证据或既有快照。仅在需要可读交付时复制模板，机器可读 JSON 为权威产物。交付前阅读 [output-contract.md](references/output-contract.md)，验证字段、来源、阶段状态、隐私、安全与不覆盖行为，并运行相关测试。
 

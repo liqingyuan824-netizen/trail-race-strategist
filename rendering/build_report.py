@@ -10,7 +10,8 @@ Usage:
     python build_report.py <report.md> [--out-dir DIR]
 
 Outputs:
-    <name>.html  and  <name>.pdf   (next to the MD, or in --out-dir)
+    <name>.html  and  <name>.pdf.  The output directory is selected in this
+    order: --out-dir, TRAIL_RACE_OUTPUT_DIR, then the Markdown source folder.
 
 The style assets (report.css, pdf_style.py) are loaded from THIS script's own
 directory, so it works no matter where the Markdown lives or where you call it.
@@ -21,9 +22,35 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from pdf_style import build_pdf  # noqa: E402
 
-from markdown import markdown
+
+def resolve_output_directory(
+    source: str,
+    arguments: list[str],
+    environ: dict[str, str] | None = None,
+) -> str:
+    """Return a portable output directory without inventing a machine path."""
+    values: list[str] = []
+    for index, token in enumerate(arguments):
+        if token != "--out-dir":
+            continue
+        if index + 1 >= len(arguments) or arguments[index + 1].startswith("--"):
+            raise ValueError("--out-dir requires a writable directory path")
+        values.append(arguments[index + 1])
+    if len(values) > 1:
+        raise ValueError("--out-dir may be supplied only once")
+
+    environment = os.environ if environ is None else environ
+    candidate = values[0] if values else environment.get("TRAIL_RACE_OUTPUT_DIR")
+    if candidate is None:
+        candidate = os.path.dirname(os.path.abspath(source))
+    if not candidate.strip():
+        raise ValueError("output directory is empty")
+
+    resolved = os.path.abspath(os.path.expanduser(candidate))
+    if os.path.exists(resolved) and not os.path.isdir(resolved):
+        raise ValueError(f"output path is not a directory: {resolved}")
+    return resolved
 
 
 def main():
@@ -32,17 +59,20 @@ def main():
         sys.exit(1)
 
     src = sys.argv[1]
-    out_dir = None
-    if "--out-dir" in sys.argv:
-        out_dir = sys.argv[sys.argv.index("--out-dir") + 1]
-
     if not os.path.exists(src):
         print("ERROR: markdown not found:", src)
         sys.exit(1)
 
     name = os.path.splitext(os.path.basename(src))[0]
-    out_dir = out_dir or os.path.dirname(os.path.abspath(src))
-    os.makedirs(out_dir, exist_ok=True)
+    try:
+        out_dir = resolve_output_directory(src, sys.argv[2:])
+        os.makedirs(out_dir, exist_ok=True)
+    except (OSError, ValueError) as exc:
+        print("ERROR: cannot use output directory:", exc)
+        sys.exit(1)
+
+    from markdown import markdown
+    from pdf_style import build_pdf  # noqa: E402
     out_html = os.path.join(out_dir, name + ".html")
     out_pdf = os.path.join(out_dir, name + ".pdf")
 

@@ -1,21 +1,65 @@
-# 安全边界
+# Safety Boundaries
 
-所有成绩类输出前必须执行安全关卡。
+Version: 1.0.0
+Applies to: all current and future modules in this skill.
 
-## 绿色
+## Purpose
 
-无红旗时可开展证据约束下的规划，仍需保留不确定性并以赛事规则为最高优先级。
+These boundaries prevent the skill from turning risk signals into performance advice when the user may be unsafe.
 
-## 黄色
+## Risk classes
 
-轻度酸痛、疲劳、冷热担忧或状态信息不全时，采用保守强度、更宽区间和恢复优先方案，并明确不确定性；不诊断，不建议未经验证的补给或装备。
+### Green
 
-## 红色
+- No red-flag symptoms.
+- Normal planning, comparison, and summarization are allowed.
 
-胸痛、晕厥、意识改变、严重呼吸困难、持续高热/系统性疾病、疑似骨折或不能负重、严重脱水/热病、意识混乱、无法控制的呕吐、急性剧烈疼痛，或赛事/医疗/救援人员要求停止时，停止配速目标、完赛时间区间、追回建议和所有冲刺策略。
+### Yellow
 
-安全响应置于最前；必要时建议立即现场或专业评估。不得把红旗改写为训练调整。
+- Mild soreness, fatigue, heat stress concerns, or small uncertainty about readiness.
+- The module may suggest conservative adjustments, rest, hydration, or easier effort.
+- The module must not claim diagnosis.
 
-优先级：官方安全指令、医疗/救援人员、立即稳定处理、最后才是 Skill 输出。本 Skill 不提供诊断，也不替代专业照护。
+### Red
 
-正式公开发布仍需具备运动医学或赛事医疗经验的人员复核；本地软件验证不等同于该复核。
+Treat the output as a stop condition when any of these appear:
+
+- Chest pain, fainting, altered consciousness, or severe breathing difficulty.
+- Persistent high fever or clear whole-body illness.
+- Suspected fracture, inability to bear weight, or acute severe pain.
+- Severe dehydration, heat illness, confusion, or uncontrolled vomiting.
+- Race staff, medical staff, or official safety personnel instruct the athlete to stop.
+
+## Required behavior at red level
+
+- Stop outputting pace targets, intervals, finish-time predictions, or push strategies.
+- Recommend urgent medical or race-staff evaluation when appropriate.
+- Separate immediate safety advice from performance judgment.
+- Do not convert a red signal into a training tweak.
+
+## Required behavior at yellow level
+
+- Prefer recovery, reduced load, or conservative pacing.
+- Explain uncertainty clearly.
+- Avoid diagnostic language such as "you definitely have" or "this proves".
+
+## Competition priority
+
+1. Official race safety instructions.
+2. Medical personnel instructions.
+3. Athlete safety and immediate stabilization.
+4. Skill output.
+
+If official safety says stop, the skill stops.
+
+## Output rules
+
+- Do not present medical advice as a replacement for professional care.
+- Do not bury safety warnings inside long performance text.
+- When risk is red, the first visible answer must be the safety response.
+- When risk is uncertain, say so explicitly instead of pretending confidence.
+
+## Module notes
+
+- `itra_public_runner` can classify blocked access, but it must not reinterpret health signals.
+- Future training and weather modules must use these boundaries before they issue any recommendation.
