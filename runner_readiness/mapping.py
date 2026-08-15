@@ -56,11 +56,12 @@ def build_current_readiness_output(
     completeness: Mapping[str, Any],
     health: Mapping[str, Any],
     cache_key: str,
+    wearable_feature_summary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     inputs = normalized_answers["inputs"]
     history_races = profile.get("historical_races", [])
     missing_field_names = [item["field"] for item in completeness.get("missing_fields", [])]
-    return {
+    output = {
         "schema_name": "current_readiness",
         "schema_version": SCHEMA_VERSION,
         "generated_at": normalized_answers["generated_at"],
@@ -166,6 +167,33 @@ def build_current_readiness_output(
             "partial_reasons": missing_field_names,
         },
     }
+    if wearable_feature_summary is not None:
+        trace = wearable_feature_summary["source_trace"]
+        output["wearable_training_exposure"] = {
+            "source": "wearable_feature_summary",
+            "summary_id": wearable_feature_summary["summary_id"],
+            "generated_at": wearable_feature_summary["generated_at"],
+            "aggregation_window": dict(wearable_feature_summary["aggregation_window"]),
+            "training_load": dict(wearable_feature_summary["training_load"]),
+            "quality": dict(wearable_feature_summary["quality"]),
+            "uncertainty": dict(wearable_feature_summary["uncertainty"]),
+            "source_activity_count": len(trace["activities"]),
+            "import_request_ids": sorted({item["import_request_id"] for item in trace["activities"]}),
+            "read_only_context": True,
+            "does_not_override_self_report_or_health": True,
+        }
+        output["evidence"].append(
+            {
+                "source_type": "wearable_feature_summary",
+                "source_uri": None,
+                "source_fingerprint": fingerprint(wearable_feature_summary),
+                "captured_at": wearable_feature_summary["generated_at"],
+                "is_user_self_report": False,
+                "confidence": 1.0 if wearable_feature_summary["uncertainty"]["level"] == "low" else 0.5,
+                "immutable": True,
+            }
+        )
+    return output
 
 
 def _summary_text(health: Mapping[str, Any], completeness: Mapping[str, Any]) -> str:

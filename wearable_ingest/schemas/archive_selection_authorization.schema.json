@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Authorized full archive activity selection",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_name", "schema_version", "authorization_id", "selection_request_id", "created_at", "consented_at", "subject_private_alias", "allowed_data_window", "w1_consent_receipt_sha256", "local_full_archive_inspection", "revocation_method", "retention_days", "governance", "immutable_authorization_hash"],
+  "properties": {
+    "schema_name": {"const": "archive_selection_authorization"}, "schema_version": {"const": "1.0.0"},
+    "authorization_id": {"type": "string", "pattern": "^archive-selection-auth-[A-Za-z0-9-]+$"}, "selection_request_id": {"type": "string", "pattern": "^archive-selection-[A-Za-z0-9-]+$"},
+    "subject_private_alias": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+    "local_full_archive_inspection": {"const": true}, "revocation_method": {"const": "selection_request_id_deletion"}, "retention_days": {"type": "integer", "minimum": 1},
+    "governance": {"type": "object", "additionalProperties": false, "required": ["allow_model_research", "user_facing_prediction_allowed"], "properties": {"allow_model_research": {"const": false}, "user_facing_prediction_allowed": {"const": false}}},
+    "immutable_authorization_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

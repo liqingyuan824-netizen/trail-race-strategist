@@ -1,0 +1,147 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "wearable_feature_summary.schema.json",
+  "title": "Wearable-derived training feature summary",
+  "description": "Aggregate and derived training features only. Raw GPS points, second-level heart-rate samples, wellness details, external account IDs, credentials, and prediction outputs are prohibited.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_name", "schema_version", "summary_id", "generated_at", "aggregation_window", "source_trace", "training_load", "quality", "uncertainty", "governance"],
+  "properties": {
+    "schema_name": {"const": "wearable_feature_summary"},
+    "schema_version": {"const": "1.0.0"},
+    "summary_id": {"type": "string", "pattern": "^wearable-summary-[A-Za-z0-9-]+$"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "aggregation_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start_date", "end_date", "source_activity_count"],
+      "properties": {
+        "start_date": {"type": "string", "format": "date"},
+        "end_date": {"type": "string", "format": "date"},
+        "source_activity_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "source_trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["activities", "trace_complete"],
+      "properties": {
+        "trace_complete": {"const": true},
+        "activities": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["activity_id", "import_request_id", "activity_date"],
+            "properties": {
+              "activity_id": {"type": "string", "pattern": "^wearable-activity-[a-f0-9]+$"},
+              "import_request_id": {"type": "string", "pattern": "^wearable-req-[A-Za-z0-9-]+$"},
+              "activity_date": {"type": "string", "format": "date"}
+            }
+          }
+        }
+      }
+    },
+    "training_load": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["windows", "maxima", "ratios"],
+      "properties": {
+        "windows": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "7d": {"$ref": "#/$defs/load_window"},
+            "28d": {"$ref": "#/$defs/load_window"},
+            "84d": {"$ref": "#/$defs/load_window"}
+          }
+        },
+        "maxima": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "longest_activity_distance_km": {"type": ["number", "null"], "minimum": 0},
+            "longest_activity_duration_minutes": {"type": ["number", "null"], "minimum": 0},
+            "longest_activity_ascent_m": {"type": ["number", "null"], "minimum": 0}
+          }
+        },
+        "ratios": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "load_7d_to_28d": {"type": ["number", "null"], "minimum": 0},
+            "load_28d_to_84d": {"type": ["number", "null"], "minimum": 0},
+            "long_distance_frequency": {"type": ["number", "null"], "minimum": 0},
+            "consecutive_training_days": {"type": ["integer", "null"], "minimum": 0},
+            "recovery_day_ratio": {"type": ["number", "null"], "minimum": 0, "maximum": 1}
+          }
+        }
+      }
+    },
+    "quality": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["coverage", "missing_data_flags", "excluded_activity_count"],
+      "properties": {
+        "coverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "distance": {"type": "number", "minimum": 0, "maximum": 1},
+            "duration": {"type": "number", "minimum": 0, "maximum": 1},
+            "ascent": {"type": "number", "minimum": 0, "maximum": 1}
+          }
+        },
+        "coverage_by_window": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "7d": {"$ref": "#/$defs/coverage_window"},
+            "28d": {"$ref": "#/$defs/coverage_window"},
+            "84d": {"$ref": "#/$defs/coverage_window"}
+          }
+        },
+        "missing_data_flags": {"type": "array", "items": {"type": "string"}},
+        "excluded_activity_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "reasons"],
+      "properties": {
+        "level": {"enum": ["low", "medium", "high", "unknown"]},
+        "reasons": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allow_model_research", "user_facing_prediction_allowed"],
+      "properties": {
+        "allow_model_research": {"const": false, "default": false},
+        "user_facing_prediction_allowed": {"const": false}
+      }
+    }
+  },
+  "$defs": {
+    "load_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "distance_km": {"type": ["number", "null"], "minimum": 0},
+        "duration_minutes": {"type": ["number", "null"], "minimum": 0},
+        "ascent_m": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "coverage_window": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "distance_km": {"type": "number", "minimum": 0, "maximum": 1},
+        "duration_seconds": {"type": "number", "minimum": 0, "maximum": 1},
+        "ascent_m": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    }
+  }
+}

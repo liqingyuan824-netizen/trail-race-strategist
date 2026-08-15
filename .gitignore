@@ -6,6 +6,9 @@
 .codex/
 .agents/
 private/
+TrailRacePrivateData/
+wearable-request-receipts/
+*.fit
 requests/
 evidence/
 reports/
@@ -13,6 +16,7 @@ outputs/
 verification/
 participant_identity_map.local.json
 **/participant_identity_map.local.json
+*identity_map*.local.json
 *.html
 *.png
 *.jpg

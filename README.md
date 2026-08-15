@@ -149,9 +149,9 @@ Only render after the report workflow has completed and reports `terminal_report
 仅当报告工作流完成且显示 `terminal_report_allowed=true` 后才可渲染；渲染不能绕过 CP 证据缺失或其他工作流门槛。
 
 ```powershell
-python rendering/build_report.py 路径\最终报告.md --out-dir E:\输出目录
+python rendering/build_report.py 路径\最终报告.md --out-dir 路径\任意可写目录
 ```
 
-The command generates a same-named `.html` file and `.pdf` file. Keep `style-spec.md`, `report.css`, and `pdf_style.py` synchronized whenever the visual style is changed.
+The command generates a same-named `.html` file and `.pdf` file. Output selection is, in order: `--out-dir`, `TRAIL_RACE_OUTPUT_DIR`, then the Markdown source directory. Any writable location works, including the current workspace of Codex, Workbody, or another AI tool; no drive letter is required. Keep `style-spec.md`, `report.css`, and `pdf_style.py` synchronized whenever the visual style is changed.
 
-命令会生成同名 `.html` 与 `.pdf` 文件。修改视觉风格时，必须同步维护 `style-spec.md`、`report.css` 和 `pdf_style.py`。
+命令会生成同名 `.html` 与 `.pdf` 文件。输出优先级依次为 `--out-dir`、环境变量 `TRAIL_RACE_OUTPUT_DIR`、Markdown 源文件目录；Codex、Workbody 或其他 AI 工具的当前工作区等任何可写位置均可，无需指定盘符。修改视觉风格时，必须同步维护 `style-spec.md`、`report.css` 和 `pdf_style.py`。

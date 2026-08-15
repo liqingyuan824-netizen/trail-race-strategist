@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "consent_receipt.schema.json",
+  "title": "Wearable import consent receipt",
+  "description": "W0 contract only. This receipt must not contain credentials, device serial numbers, external account identifiers, or a real name.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_name",
+    "schema_version",
+    "receipt_id",
+    "request_id",
+    "consented_at",
+    "created_at",
+    "subject_private_alias",
+    "data_owner_alias",
+    "privacy_mode",
+    "source_brand",
+    "allowed_data_window",
+    "allowed_purposes",
+    "revocation_method",
+    "consent_scope",
+    "retention",
+    "governance",
+    "immutable_receipt_hash"
+  ],
+  "properties": {
+    "schema_name": {"const": "wearable_consent_receipt"},
+    "schema_version": {"const": "1.0.0"},
+    "receipt_id": {"type": "string", "pattern": "^wearable-consent-[A-Za-z0-9-]+$"},
+    "request_id": {"type": "string", "pattern": "^wearable-req-[A-Za-z0-9-]+$"},
+    "consented_at": {"type": "string", "format": "date-time"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "subject_private_alias": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+    "data_owner_alias": {"type": "string", "pattern": "^[A-Za-z0-9_-]+$"},
+    "privacy_mode": {"const": "local_private"},
+    "source_brand": {"enum": ["garmin", "coros"]},
+    "allowed_data_window": {"type": "object", "additionalProperties": false, "required": ["start_date", "end_date"], "properties": {"start_date": {"type": "string", "format": "date"}, "end_date": {"type": "string", "format": "date"}}},
+    "allowed_purposes": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["derived_training_features", "readiness_advice"]}},
+    "revocation_method": {"const": "request_id_deletion"},
+    "consent_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["local_fit_import", "derived_training_features", "readiness_advice", "allow_model_research"],
+      "properties": {
+        "local_fit_import": {"const": true},
+        "derived_training_features": {"const": true},
+        "readiness_advice": {"type": "boolean", "default": true},
+        "allow_model_research": {"const": false, "default": false, "description": "W0/W1 hard stop; later research requires a new approved schema and separate consent."}
+      }
+    },
+    "retention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raw_fit_retention_days", "derived_feature_retention_days", "delete_by_request_id_supported"],
+      "properties": {
+        "raw_fit_retention_days": {"type": "integer", "minimum": 1, "default": 90},
+        "derived_feature_retention_days": {"type": "integer", "minimum": 1, "default": 365},
+        "delete_by_request_id_supported": {"const": true}
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user_facing_prediction_allowed"],
+      "properties": {"user_facing_prediction_allowed": {"const": false}}
+    },
+    "immutable_receipt_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+  }
+}

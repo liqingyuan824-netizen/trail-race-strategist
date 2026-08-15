@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "normalized_activity.schema.json",
+  "title": "Non-identifying normalized wearable activity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_name", "schema_version", "request_id", "import_request_id", "activity_id", "source_sha256", "started_at_unix", "duration_seconds", "distance_km", "ascent_m", "gps_present", "heart_rate_present", "average_heart_rate_bpm"],
+  "properties": {
+    "schema_name": {"const": "wearable_normalized_activity"},
+    "schema_version": {"const": "1.0.0"},
+    "request_id": {"type": "string", "pattern": "^wearable-req-[A-Za-z0-9-]+$"},
+    "import_request_id": {"type": "string", "pattern": "^wearable-req-[A-Za-z0-9-]+$"},
+    "activity_id": {"type": "string", "pattern": "^wearable-activity-[a-f0-9]+$"},
+    "source_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "started_at_unix": {"type": "integer", "minimum": 0},
+    "duration_seconds": {"type": "number", "minimum": 0},
+    "distance_km": {"type": "number", "minimum": 0},
+    "ascent_m": {"type": ["number", "null"], "minimum": 0},
+    "gps_present": {"type": "boolean"},
+    "heart_rate_present": {"type": "boolean"},
+    "average_heart_rate_bpm": {"type": ["number", "null"], "minimum": 0}
+  }
+}
