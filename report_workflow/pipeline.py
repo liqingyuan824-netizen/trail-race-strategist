@@ -12,6 +12,7 @@ from datetime import datetime, timezone
 from hashlib import sha256
 import json
 from pathlib import Path
+import re
 from typing import Any, Mapping
 
 from course_model import build_course_model
@@ -39,6 +40,13 @@ TERMINAL_ARTIFACTS = (
 # These ASCII anchors make the terminal validation resilient to display
 # encoding differences while still enforcing the complete runner-facing shape.
 FORMAL_REPORT_MARKERS = ("# ", "### 6.1", "### 6.2", "### 6.3")
+CP_OVERVIEW_REQUIRED_COLUMNS = (
+    "#", "赛段区间", "km", "爬升", "下降", "本段耗时", "到站停留", "出站用时",
+    "累计用时", "到达时间", "离站时间", "关门时间", "余量", "赛道难度",
+)
+SEGMENT_CARD_REQUIRED_ROWS = (
+    "数据边界", "距离与升降", "条件式窗口", "赛道特征", "风险", "行动策略", "补给/装备", "关门边界",
+)
 
 
 class ReportWorkflowError(ValueError):
@@ -127,11 +135,46 @@ def _report_text_errors(text: str, *, artifact: str) -> list[str]:
             errors.append(f"FINAL_REPORT_MARKER_MISSING:{artifact}:{marker}")
     if text.count("\n## ") < 8:
         errors.append(f"FINAL_REPORT_SECTION_SKELETON_INCOMPLETE:{artifact}")
-    overview = next((line for line in text.splitlines() if line.startswith("| # |")), None)
-    if overview is None or overview.count("|") < 15:
+    overview_start = text.find("### 6.1")
+    tactics_start = text.find("### 6.2")
+    overview_block = text[overview_start:tactics_start] if overview_start >= 0 and tactics_start > overview_start else ""
+    overview_lines = [line.strip() for line in overview_block.splitlines() if line.strip().startswith("|")]
+    overview = next((line for line in overview_lines if line.startswith("| # |")), None)
+    data_rows: list[str] = []
+    if overview is None:
         errors.append(f"FINAL_CP_OVERVIEW_SCHEMA_INVALID:{artifact}")
-    if "### 6.2" in text and "#### S" not in text:
+    else:
+        header_cells = [cell.strip() for cell in overview.strip("|").split("|")]
+        if tuple(header_cells[:len(CP_OVERVIEW_REQUIRED_COLUMNS)]) != CP_OVERVIEW_REQUIRED_COLUMNS:
+            errors.append(f"FINAL_CP_OVERVIEW_COLUMNS_INVALID:{artifact}")
+        data_rows = [line for line in overview_lines if line.startswith("| S")]
+        if not data_rows:
+            errors.append(f"FINAL_CP_OVERVIEW_ROWS_MISSING:{artifact}")
+        for row in data_rows:
+            cells = [cell.strip() for cell in row.strip("|").split("|")]
+            if len(cells) < len(CP_OVERVIEW_REQUIRED_COLUMNS):
+                errors.append(f"FINAL_CP_OVERVIEW_ROW_INCOMPLETE:{artifact}")
+                break
+            if any(not cells[index] or cells[index] == "待补充" for index in range(5, 13)):
+                errors.append(f"FINAL_CP_TIME_BUDGET_INCOMPLETE:{artifact}")
+                break
+        if "**总计：**" not in overview_block:
+            errors.append(f"FINAL_CP_OVERVIEW_TOTAL_MISSING:{artifact}")
+    tactics_block = text[tactics_start:text.find("### 6.3", tactics_start)] if tactics_start >= 0 else ""
+    card_matches = list(re.finditer(r"^#### S\d+.*$", tactics_block, flags=re.MULTILINE))
+    cards = [
+        tactics_block[match.end(): card_matches[index + 1].start() if index + 1 < len(card_matches) else len(tactics_block)]
+        for index, match in enumerate(card_matches)
+    ]
+    if not cards:
         errors.append(f"FINAL_SEGMENT_TACTICS_EMPTY:{artifact}")
+    else:
+        if data_rows and len(cards) != len(data_rows):
+            errors.append(f"FINAL_SEGMENT_TACTICS_CARD_COUNT_MISMATCH:{artifact}")
+        for card in cards:
+            if any(f"| {label} |" not in card for label in SEGMENT_CARD_REQUIRED_ROWS):
+                errors.append(f"FINAL_SEGMENT_TACTICS_CARD_INCOMPLETE:{artifact}")
+                break
     if "???" in text:
         errors.append(f"FINAL_REPORT_ENCODING_CORRUPTED:{artifact}")
     if "\ufffd" in text:
